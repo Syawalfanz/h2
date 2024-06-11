@@ -1,0 +1,491 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.*;
+
+public class PracticalExercises2 extends JFrame {
+    String url = "jdbc:mysql://localhost:3306/db_ticket";
+    String username = "root";
+    String password = "";
+    
+    private JComboBox<String> cbSeat;
+    private JTextField txtTotalTicket;
+    private JLabel lblTotalPrice;
+    private JRadioButton studentRadio;
+    private JRadioButton publicRadio;
+    private JTextArea textArea;
+    private JTextField nameField;  
+    private JTextField idField;    
+    private JTextField institutionField; 
+    private JRadioButton onlineFpxRadio; 
+    private JRadioButton eWalletRadio;   
+    private JRadioButton othersOnlineRadio; 
+
+    public PracticalExercises2() {
+        
+        setTitle("K.A Event Ticket");
+        setLayout(new BorderLayout());
+        setSize(800, 400);
+
+        JLabel titleLabel = new JLabel("Purchase of Knowledge Sharing Event with Khairul Aming (K.A)");
+        titleLabel.setFont(new Font("Serif", Font.BOLD, 16));
+        add(titleLabel, BorderLayout.NORTH);
+
+        JPanel personDetailsPanel = new JPanel(new BorderLayout());
+        personDetailsPanel.setBorder(BorderFactory.createTitledBorder(new TitledBorder(BorderFactory.createLineBorder(Color.BLACK),
+                "Person Details", TitledBorder.LEFT, TitledBorder.TOP)));
+        personDetailsPanel.setPreferredSize(new Dimension(400, 100));
+
+        JPanel formPanel = new JPanel(new GridLayout(0, 2, 3, 3));
+        personDetailsPanel.add(formPanel, BorderLayout.WEST);
+
+        JLabel nameLabel = new JLabel("Name:");
+        nameField = new JTextField(10); 
+        JLabel idLabel = new JLabel("ID/IC:");
+        idField = new JTextField(10); 
+        JLabel institutionLabel = new JLabel("Institution:");
+        institutionField = new JTextField(10); 
+        JLabel participantLabel = new JLabel("As a Participant:");
+        JPanel participantPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        publicRadio = new JRadioButton("Public");
+        studentRadio = new JRadioButton("Student");
+        ButtonGroup participantGroup = new ButtonGroup();
+        participantGroup.add(publicRadio);
+        participantGroup.add(studentRadio);
+        participantPanel.add(publicRadio);
+        participantPanel.add(studentRadio);
+
+        formPanel.add(nameLabel);
+        formPanel.add(nameField);
+        formPanel.add(idLabel);
+        formPanel.add(idField);
+        formPanel.add(institutionLabel);
+        formPanel.add(institutionField);
+        formPanel.add(participantLabel);
+        formPanel.add(participantPanel);
+
+        add(personDetailsPanel, BorderLayout.CENTER);
+
+        JPanel ticketPanel = new JPanel();
+        ticketPanel.setBorder(BorderFactory.createTitledBorder(new TitledBorder(BorderFactory.createLineBorder(Color.RED),
+                "Ticket", TitledBorder.LEFT, TitledBorder.TOP)));
+        ticketPanel.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.insets = new Insets(5, 5, 5, 5);
+
+        JLabel seatLabel = new JLabel("Seat:");
+        ticketPanel.add(seatLabel, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+
+        cbSeat = new JComboBox<>();
+        cbSeat.setPreferredSize(new Dimension(150, 25));
+        cbSeat.addItem("-Select-");
+        cbSeat.addItem("Front - HotSeat (RM50)");
+        cbSeat.addItem("Wing Left (RM40)");
+        cbSeat.addItem("Wing Right (RM40)");
+        cbSeat.addItem("UpperStand (RM20)");
+        cbSeat.addItem("Normal (RM10)");
+        ticketPanel.add(cbSeat, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+
+        JLabel totalTicketLabel = new JLabel("Total Ticket:");
+        ticketPanel.add(totalTicketLabel, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 1;
+
+        txtTotalTicket = new JTextField(3);
+        ticketPanel.add(txtTotalTicket, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+
+        JLabel paymentLabel = new JLabel("Payment Method:");
+        ticketPanel.add(paymentLabel, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 2;
+        gbc.gridwidth = 1;
+
+        JPanel paymentPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        onlineFpxRadio = new JRadioButton("Online FPX"); 
+        eWalletRadio = new JRadioButton("E-Wallet"); 
+        othersOnlineRadio = new JRadioButton("Others Online"); 
+
+        ButtonGroup paymentGroup = new ButtonGroup();
+        paymentGroup.add(onlineFpxRadio);
+        paymentGroup.add(eWalletRadio);
+        paymentGroup.add(othersOnlineRadio);
+
+        paymentPanel.add(onlineFpxRadio);
+        paymentPanel.add(eWalletRadio);
+        paymentPanel.add(othersOnlineRadio);
+
+        ticketPanel.add(paymentPanel, gbc);
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+
+        JButton btnCheckPrice = new JButton("Check Price");
+        btnCheckPrice.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                calculateTotalPrice();
+            }
+        });
+        buttonPanel.add(btnCheckPrice);
+
+        JButton btnClear = new JButton("Clear");
+        btnClear.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                clearForm();
+            }
+        });
+        buttonPanel.add(btnClear);
+
+        JButton btnSubmit = new JButton("Submit/Proceed");
+        btnSubmit.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                submitForm();
+            }
+        });
+        buttonPanel.add(btnSubmit);
+
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.WEST;
+        ticketPanel.add(buttonPanel, gbc);
+
+        lblTotalPrice = new JLabel("Total Price: ");
+        lblTotalPrice.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        gbc.gridy = 4;
+        ticketPanel.add(lblTotalPrice, gbc);
+
+        add(ticketPanel, BorderLayout.SOUTH);
+        
+        textArea = new JTextArea();
+        textArea.setBorder(BorderFactory.createTitledBorder(new TitledBorder(BorderFactory.createLineBorder(Color.BLUE),
+                " Details Information", TitledBorder.LEFT, TitledBorder.TOP)));
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        scrollPane.setPreferredSize(new Dimension(350, 400));
+        add(scrollPane, BorderLayout.EAST);
+
+        setVisible(true);
+    }
+
+    private String getParticipantType() {
+        if (publicRadio.isSelected()) {
+            return "Public";
+        } else if (studentRadio.isSelected()) {
+            return "Student";
+        } else {
+            return "";
+        }
+    }
+
+    private void calculateTotalPrice() {
+        String selectedItem = (String) cbSeat.getSelectedItem();
+        int totalTickets = Integer.parseInt(txtTotalTicket.getText());
+
+        double totalPrice = 0.0;
+
+        switch (selectedItem) {
+            case "Front - HotSeat (RM50)":
+                totalPrice = totalTickets * 50.0;
+                break;
+            case "Wing Left (RM40)":
+            case "Wing Right (RM40)":
+                totalPrice = totalTickets * 40.0;
+                break;
+            case "UpperStand (RM20)":
+                totalPrice = totalTickets * 20.0;
+                break;
+            case "Normal (RM10)":
+                totalPrice = totalTickets * 10.0;
+                break;
+            default:
+                totalPrice = 0.00;
+        }
+
+        if (isStudentParticipant()) {
+            totalPrice -= (totalPrice * 0.15);
+        }
+
+        lblTotalPrice.setText("Total Price: RM " + String.format("%.2f", totalPrice));
+    }
+
+    private boolean isStudentParticipant() {
+        return studentRadio.isSelected();
+    }
+
+    private void clearForm() {
+        txtTotalTicket.setText("");
+        cbSeat.setSelectedIndex(0);
+        lblTotalPrice.setText("Total Price: ");
+    }
+
+    private void submitForm() {
+        String name = nameField.getText();
+        String ic = idField.getText();
+        String institution = institutionField.getText();
+        String seat = (String) cbSeat.getSelectedItem();
+        String totalTicket = txtTotalTicket.getText();
+        String paymentMethod = ""; 
+        double totalPrice = 0.0;
+
+        calculateTotalPrice();
+
+        if (onlineFpxRadio.isSelected()) {
+            paymentMethod = "Online FPX";
+        } else if (eWalletRadio.isSelected()) {
+            paymentMethod = "E-Wallet";
+        } else if (othersOnlineRadio.isSelected()) {
+            paymentMethod = "Others Online";
+        }
+
+        String totalPriceText = lblTotalPrice.getText();
+        totalPrice = Double.parseDouble(totalPriceText.substring(totalPriceText.indexOf("RM") + 3));
+
+        String details = "Name: " + name + "\n" +
+                         "ID/IC: " + ic + "\n" +
+                         "Institution: " + institution + "\n" +
+                         "Seat: " + seat + "\n" +
+                         "Total Ticket: " + totalTicket + "\n" +
+                         "Payment Method: " + paymentMethod + "\n" +
+                         "Total Price: RM " + String.format("%.2f", totalPrice) + "\n\n";
+        textArea.append(details);
+
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection conn = DriverManager.getConnection(url, username, password);
+            Statement stat = conn.createStatement();
+            String insert = "INSERT INTO tb_buyticket " +
+                            "(name, id_ic, participant, institute, seat, "
+                    + "total_ticket, payment_method, total_price) VALUES "
+                    + "('" + name + "','" + ic + "', '" + getParticipantType()
+                    + "', '" + institution + "', '" + seat + "', '" + totalTicket + "', '" + paymentMethod + "', '" + totalPrice + "')";
+            stat.executeUpdate(insert);
+            JOptionPane.showMessageDialog(null, "Data successfully added!");
+            conn.close();
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage());
+        }
+    }
+
+    public static void main(String[] args) {
+        PracticalExercises2 lab = new PracticalExercises2();
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
